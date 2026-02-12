@@ -1,50 +1,85 @@
-# Welcome to your Expo app 👋
+# LMS Native App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A robust React Native application built with Expo for managing Laboratory/Learning Management System operations. This application supports role-based access for Super Admins and Branch Admins, offering features like dashboard analytics, report generation, user management, and more.
 
-## Get started
+## Features
 
-1. Install dependencies
+*   **Role-Based Access Control (RBAC)**:
+    *   **Super Admin**: Full access to Dashboard, Branch Management, Test/Doctor Masters, Reports, and Settings.
+    *   **Branch Admin**: Focused access to Branch Reports (Summary, Monthly Breakdowns) and Branch User Management.
+*   **Authentication**: Secure login flow with persistent sessions.
+*   **Dashboard**: Real-time overview of key metrics.
+*   **Reports**: Detailed reports including Summary, Branch Monthly Breakdown, and Test Monthly Breakdown.
+*   **User Management**:
+    *   Manage Branch Admins.
+    *   Manage Branch Users (Receptionists, Technicians) with specific branch assignments.
+*   **Masters**: Manage Tests and Doctors (Super Admin).
+*   **Theming**: Support for Light, Dark, and System default themes.
 
-   ```bash
-   npm install
-   ```
+## Prerequisites
 
-2. Start the app
+Before you begin, ensure you have met the following requirements:
 
-   ```bash
-   npx expo start
-   ```
+*   **Node.js**: Download and install Node.js (v14 or newer recommended).
+*   **npm** or **yarn**: Default package managers for Node.js.
+*   **Expo Go**: Install the Expo Go app on your iOS or Android device from the App Store or Google Play Store to run the app on a physical device.
 
-In the output, you'll find options to open the app in a
+## Installation
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+1.  **Clone the repository** (if applicable) or navigate to the project directory:
+    ```bash
+    cd lms_native
+    ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
 
-## Get a fresh project
+## Configuration
 
-When you're ready, run:
+This app connects to a backend API. You need to configure the API base URL.
+
+1.  Open `services/api.ts`.
+2.  Update the `baseURL` to point to your backend server:
+    ```typescript
+    const api = axios.create({
+      baseURL: "http://your-backend-ip:5000", // Update this
+    });
+    ```
+    *Note: If running on a physical Android device, use your computer's local IP address (e.g., `http://192.168.1.10:5000`) instead of `localhost`.*
+
+## Running the Application
+
+To start the development server:
 
 ```bash
-npm run reset-project
+npm start
+# or
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+This will start the Metro Bundler. You will see a QR code in the terminal.
 
-## Learn more
+*   **Run on Android/iOS Device**: Scan the QR code using the **Expo Go** app (Android) or the Camera app (iOS).
+*   **Run on Emulator/Simulator**: Press `a` for Android Emulator or `i` for iOS Simulator in the terminal window.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Project Structure
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+*   **`app/`**: Contains the Expo Router file-based routing logic.
+    *   **`(auth)/`**: Authentication routes (Login).
+    *   **`(drawer)/`**: Main application screens inside the drawer navigation.
+*   **`components/`**: Reusable UI components.
+*   **`context/`**: React Context providers (AuthContext, ThemeContext).
+*   **`services/`**: API configuration and service calls.
+*   **`assets/`**: Images, fonts, and other static assets.
 
-## Join the community
+## Built With
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+*   [React Native](https://reactnative.dev/)
+*   [Expo](https://expo.dev/)
+*   [Expo Router](https://docs.expo.dev/router/introduction/) - File-based routing.
+*   [React Native Paper](https://callstack.github.io/react-native-paper/) - Material Design library.
+*   [Axios](https://axios-http.com/) - Promise based HTTP client.

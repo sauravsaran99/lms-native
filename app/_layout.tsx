@@ -1,24 +1,47 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { Slot, useRouter, useSegments } from 'expo-router';
+import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import 'react-native-gesture-handler';
+import { AuthProvider, useAuth } from '../context/AuthContext';
+import { AppThemeProvider } from '../context/ThemeContext';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+function InitialLayout() {
+  const { userToken, userRole, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+    const inTabsGroup = segments[0] === '(drawer)';
+
+    if (!userToken && !inAuthGroup) {
+      // Redirect to the sign-in page.
+      router.replace('/(auth)/login');
+    } else if (userToken && (inAuthGroup || segments[0] !== '(drawer)')) {
+      // Redirect authenticated users to the dashboard
+      router.replace('/(drawer)/dashboard');
+    }
+  }, [userToken, userRole, segments, isLoading]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return <Slot />;
+}
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <AuthProvider>
+      <AppThemeProvider>
+        <InitialLayout />
+      </AppThemeProvider>
+    </AuthProvider>
   );
 }
