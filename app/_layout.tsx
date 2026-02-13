@@ -20,8 +20,12 @@ function InitialLayout() {
       // Redirect to the sign-in page.
       router.replace('/(auth)/login');
     } else if (userToken && (inAuthGroup || segments[0] !== '(drawer)')) {
-      // Redirect authenticated users to the dashboard
-      router.replace('/(drawer)/dashboard');
+      // Redirect authenticated users
+      if (userRole === 'RECEPTIONIST') {
+        router.replace('/(drawer)/bookings');
+      } else {
+        router.replace('/(drawer)/dashboard');
+      }
     }
   }, [userToken, userRole, segments, isLoading]);
 

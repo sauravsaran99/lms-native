@@ -7,12 +7,13 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { useAuth } from '../../context/AuthContext';
 
-function CustomDrawerContent(props: any) {
+const CustomDrawerContent = (props: any) => {
     const router = useRouter();
     const theme = useTheme();
     const { userRole } = useAuth();
     const isSuperAdmin = userRole === 'SUPER_ADMIN';
     const isBranchAdmin = userRole === 'BRANCH_ADMIN';
+    const isReceptionist = userRole === 'RECEPTIONIST';
 
     const [reportsExpanded, setReportsExpanded] = useState(false);
     const [branchAdminExpanded, setBranchAdminExpanded] = useState(false);
@@ -22,34 +23,36 @@ function CustomDrawerContent(props: any) {
             <DrawerContentScrollView {...props} style={{ backgroundColor: theme.colors.surface }}>
                 <DrawerItemList {...props} />
 
-                {/* Expandable Reports Section - Accessible to both SUPER_ADMIN and BRANCH_ADMIN (implied by lack of check, or we can add one if needed) */}
-                <TouchableOpacity
-                    onPress={() => setReportsExpanded(!reportsExpanded)}
-                    style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        padding: 18,
-                        paddingVertical: 12,
-                        paddingHorizontal: 18,
-                    }}
-                >
-                    <MaterialCommunityIcons
-                        name="chart-box-outline"
-                        size={24}
-                        color={theme.colors.onSurfaceVariant}
-                        style={{ marginRight: 32 }}
-                    />
-                    <Text style={{ fontSize: 16, color: theme.colors.onSurface, flex: 1, fontWeight: '500' }}>
-                        Reports
-                    </Text>
-                    <MaterialCommunityIcons
-                        name={reportsExpanded ? "chevron-up" : "chevron-down"}
-                        size={24}
-                        color={theme.colors.onSurfaceVariant}
-                    />
-                </TouchableOpacity>
+                {/* Expandable Reports Section - Hidden for RECEPTIONIST */}
+                {!isReceptionist && (
+                    <TouchableOpacity
+                        onPress={() => setReportsExpanded(!reportsExpanded)}
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            padding: 18,
+                            paddingVertical: 12,
+                            paddingHorizontal: 18,
+                        }}
+                    >
+                        <MaterialCommunityIcons
+                            name="chart-box-outline"
+                            size={24}
+                            color={theme.colors.onSurfaceVariant}
+                            style={{ marginRight: 32 }}
+                        />
+                        <Text style={{ fontSize: 16, color: theme.colors.onSurface, flex: 1, fontWeight: '500' }}>
+                            Reports
+                        </Text>
+                        <MaterialCommunityIcons
+                            name={reportsExpanded ? "chevron-up" : "chevron-down"}
+                            size={24}
+                            color={theme.colors.onSurfaceVariant}
+                        />
+                    </TouchableOpacity>
+                )}
 
-                {reportsExpanded && (
+                {!isReceptionist && reportsExpanded && (
                     <View style={{ marginLeft: 32, borderLeftWidth: 1, borderLeftColor: theme.colors.outlineVariant }}>
                         <DrawerItem
                             label="Summary Report"
@@ -70,6 +73,7 @@ function CustomDrawerContent(props: any) {
                         />
                     </View>
                 )}
+
                 {/* Expandable Branch Admin Section - Only for Branch Admin */}
                 {isBranchAdmin && (
                     <>
@@ -124,20 +128,17 @@ function CustomDrawerContent(props: any) {
             </View>
         </View>
     );
-}
+};
 
 export default function DrawerLayout() {
     const theme = useTheme();
     const { userRole } = useAuth();
     const isBranchAdmin = userRole === 'BRANCH_ADMIN';
-    const isSuperAdmin = userRole === 'SUPER_ADMIN';
+    const isReceptionist = userRole === 'RECEPTIONIST';
 
-    // Helper to determine if a route should be hidden
-    // We hide everything except Reports (and children) for Branch Admin
-    // Reports, Branch Breakdown, Test Breakdown are hidden from MAIN list via drawerItemStyle in the original code, 
-    // but they are shown in CustomDrawerContent.
-    // The items below are the MAIN list items.
+    // Hide logic
     const hideIfBranchAdmin: { display: "none" | "flex" | undefined } = isBranchAdmin ? { display: 'none' } : { display: undefined };
+    const hideIfReceptionist: { display: "none" | "flex" | undefined } = isReceptionist ? { display: 'none' } : { display: undefined };
 
     return (
         <Drawer
@@ -149,7 +150,6 @@ export default function DrawerLayout() {
                 drawerActiveTintColor: theme.colors.primary,
                 drawerInactiveTintColor: theme.colors.onSurfaceVariant,
                 drawerLabelStyle: { fontSize: 16 },
-                // Prevent access if hidden? Expo Router doesn't strictly block by hiding, but we handle redirect in _layout.tsx
             }}
         >
             <Drawer.Screen
@@ -160,7 +160,9 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
                     ),
+                    drawerItemStyle: hideIfReceptionist,
                 }}
+                redirect={isReceptionist}
             />
 
             <Drawer.Screen
@@ -171,9 +173,9 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="store" size={size} color={color} />
                     ),
-                    drawerItemStyle: hideIfBranchAdmin,
+                    drawerItemStyle: isReceptionist ? { display: 'none' } : hideIfBranchAdmin,
                 }}
-                redirect={isBranchAdmin}
+                redirect={isBranchAdmin || isReceptionist}
             />
             <Drawer.Screen
                 name="testmaster"
@@ -183,9 +185,9 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="flask" size={size} color={color} />
                     ),
-                    drawerItemStyle: hideIfBranchAdmin,
+                    drawerItemStyle: isReceptionist ? { display: 'none' } : hideIfBranchAdmin,
                 }}
-                redirect={isBranchAdmin}
+                redirect={isBranchAdmin || isReceptionist}
             />
             <Drawer.Screen
                 name="doctormaster"
@@ -195,9 +197,9 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="doctor" size={size} color={color} />
                     ),
-                    drawerItemStyle: hideIfBranchAdmin,
+                    drawerItemStyle: isReceptionist ? { display: 'none' } : hideIfBranchAdmin,
                 }}
-                redirect={isBranchAdmin}
+                redirect={isBranchAdmin || isReceptionist}
             />
             <Drawer.Screen
                 name="branchadmins"
@@ -207,9 +209,9 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="account-tie" size={size} color={color} />
                     ),
-                    drawerItemStyle: hideIfBranchAdmin,
+                    drawerItemStyle: isReceptionist ? { display: 'none' } : hideIfBranchAdmin,
                 }}
-                redirect={isBranchAdmin}
+                redirect={isBranchAdmin || isReceptionist}
             />
             <Drawer.Screen
                 name="auditlogs"
@@ -219,9 +221,33 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="file-document-outline" size={size} color={color} />
                     ),
-                    drawerItemStyle: hideIfBranchAdmin,
+                    drawerItemStyle: isReceptionist ? { display: 'none' } : hideIfBranchAdmin,
                 }}
-                redirect={isBranchAdmin}
+                redirect={isBranchAdmin || isReceptionist}
+            />
+            <Drawer.Screen
+                name="bookings"
+                options={{
+                    drawerLabel: 'Bookings',
+                    title: 'Bookings',
+                    drawerIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="calendar-check" size={size} color={color} />
+                    ),
+                    drawerItemStyle: !isReceptionist ? { display: 'none' } : undefined,
+                }}
+                redirect={!isReceptionist}
+            />
+            <Drawer.Screen
+                name="customers"
+                options={{
+                    drawerLabel: 'Customers',
+                    title: 'Customers',
+                    drawerIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="account-group" size={size} color={color} />
+                    ),
+                    drawerItemStyle: !isReceptionist ? { display: 'none' } : undefined,
+                }}
+                redirect={!isReceptionist}
             />
             <Drawer.Screen
                 name="reports"
@@ -233,6 +259,7 @@ export default function DrawerLayout() {
                         <MaterialCommunityIcons name="chart-box-outline" size={size} color={color} />
                     ),
                 }}
+                redirect={isReceptionist}
             />
             <Drawer.Screen
                 name="branch_monthly_breakdown"
@@ -241,6 +268,7 @@ export default function DrawerLayout() {
                     title: 'Branch Monthly Breakdown',
                     drawerItemStyle: { display: 'none' }, // Always hide from main list
                 }}
+                redirect={isReceptionist}
             />
             <Drawer.Screen
                 name="test_monthly_breakdown"
@@ -249,6 +277,7 @@ export default function DrawerLayout() {
                     title: 'Test Monthly Breakdown',
                     drawerItemStyle: { display: 'none' }, // Always hide from main list
                 }}
+                redirect={isReceptionist}
             />
             <Drawer.Screen
                 name="settings"
@@ -265,6 +294,7 @@ export default function DrawerLayout() {
                     title: 'Branch Users',
                     drawerItemStyle: { display: 'none' }, // Always hide from main list
                 }}
+                redirect={isReceptionist}
             />
         </Drawer>
     );
