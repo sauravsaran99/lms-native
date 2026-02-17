@@ -19,7 +19,7 @@ function InitialLayout() {
     if (!userToken && !inAuthGroup) {
       // Redirect to the sign-in page.
       router.replace('/(auth)/login');
-    } else if (userToken && (inAuthGroup || segments[0] !== '(drawer)')) {
+    } else if (userToken && (inAuthGroup || !segments[0])) {
       // Redirect authenticated users
       if (userRole === 'RECEPTIONIST') {
         router.replace('/(drawer)/bookings');

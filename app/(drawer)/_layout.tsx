@@ -14,6 +14,8 @@ const CustomDrawerContent = (props: any) => {
     const isSuperAdmin = userRole === 'SUPER_ADMIN';
     const isBranchAdmin = userRole === 'BRANCH_ADMIN';
     const isReceptionist = userRole === 'RECEPTIONIST';
+    const isTechnician = userRole === 'TECHNICIAN';
+    const isCustomer = userRole === 'CUSTOMER';
 
     const [reportsExpanded, setReportsExpanded] = useState(false);
     const [branchAdminExpanded, setBranchAdminExpanded] = useState(false);
@@ -23,8 +25,8 @@ const CustomDrawerContent = (props: any) => {
             <DrawerContentScrollView {...props} style={{ backgroundColor: theme.colors.surface }}>
                 <DrawerItemList {...props} />
 
-                {/* Expandable Reports Section - Hidden for RECEPTIONIST */}
-                {!isReceptionist && (
+                {/* Expandable Reports Section - Hidden for RECEPTIONIST, TECHNICIAN and CUSTOMER */}
+                {!isReceptionist && !isTechnician && !isCustomer && (
                     <TouchableOpacity
                         onPress={() => setReportsExpanded(!reportsExpanded)}
                         style={{
@@ -52,7 +54,7 @@ const CustomDrawerContent = (props: any) => {
                     </TouchableOpacity>
                 )}
 
-                {!isReceptionist && reportsExpanded && (
+                {!isReceptionist && !isTechnician && !isCustomer && reportsExpanded && (
                     <View style={{ marginLeft: 32, borderLeftWidth: 1, borderLeftColor: theme.colors.outlineVariant }}>
                         <DrawerItem
                             label="Summary Report"
@@ -135,10 +137,15 @@ export default function DrawerLayout() {
     const { userRole } = useAuth();
     const isBranchAdmin = userRole === 'BRANCH_ADMIN';
     const isReceptionist = userRole === 'RECEPTIONIST';
-
+    const isTechnician = userRole === 'TECHNICIAN';
+    const isCustomer = userRole === 'CUSTOMER';
+    console.log('isCustomer', isCustomer)
     // Hide logic
-    const hideIfBranchAdmin: { display: "none" | "flex" | undefined } = isBranchAdmin ? { display: 'none' } : { display: undefined };
-    const hideIfReceptionist: { display: "none" | "flex" | undefined } = isReceptionist ? { display: 'none' } : { display: undefined };
+    const hideIfBranchAdmin = isBranchAdmin ? { display: 'none' as const } : undefined;
+    const hideIfReceptionist = isReceptionist ? { display: 'none' as const } : undefined;
+    const hideIfTechnician = isTechnician ? { display: 'none' as const } : undefined;
+    const hideIfCustomer = isCustomer ? { display: 'none' as const } : undefined;
+    const hideForRestricted = isReceptionist || isTechnician || isCustomer ? { display: 'none' as const } : undefined;
 
     return (
         <Drawer
@@ -160,9 +167,9 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
                     ),
-                    drawerItemStyle: hideIfReceptionist,
+                    drawerItemStyle: hideForRestricted,
                 }}
-                redirect={isReceptionist}
+                redirect={isReceptionist || isTechnician || isCustomer}
             />
 
             <Drawer.Screen
@@ -173,9 +180,9 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="store" size={size} color={color} />
                     ),
-                    drawerItemStyle: isReceptionist ? { display: 'none' } : hideIfBranchAdmin,
+                    drawerItemStyle: isReceptionist || isTechnician || isCustomer ? { display: 'none' } : hideIfBranchAdmin,
                 }}
-                redirect={isBranchAdmin || isReceptionist}
+                redirect={isBranchAdmin || isReceptionist || isTechnician || isCustomer}
             />
             <Drawer.Screen
                 name="testmaster"
@@ -185,9 +192,9 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="flask" size={size} color={color} />
                     ),
-                    drawerItemStyle: isReceptionist ? { display: 'none' } : hideIfBranchAdmin,
+                    drawerItemStyle: isReceptionist || isTechnician || isCustomer ? { display: 'none' } : hideIfBranchAdmin,
                 }}
-                redirect={isBranchAdmin || isReceptionist}
+                redirect={isBranchAdmin || isReceptionist || isTechnician || isCustomer}
             />
             <Drawer.Screen
                 name="doctormaster"
@@ -197,9 +204,9 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="doctor" size={size} color={color} />
                     ),
-                    drawerItemStyle: isReceptionist ? { display: 'none' } : hideIfBranchAdmin,
+                    drawerItemStyle: isReceptionist || isTechnician || isCustomer ? { display: 'none' } : hideIfBranchAdmin,
                 }}
-                redirect={isBranchAdmin || isReceptionist}
+                redirect={isBranchAdmin || isReceptionist || isTechnician || isCustomer}
             />
             <Drawer.Screen
                 name="branchadmins"
@@ -209,9 +216,9 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="account-tie" size={size} color={color} />
                     ),
-                    drawerItemStyle: isReceptionist ? { display: 'none' } : hideIfBranchAdmin,
+                    drawerItemStyle: isReceptionist || isTechnician || isCustomer ? { display: 'none' } : hideIfBranchAdmin,
                 }}
-                redirect={isBranchAdmin || isReceptionist}
+                redirect={isBranchAdmin || isReceptionist || isTechnician || isCustomer}
             />
             <Drawer.Screen
                 name="auditlogs"
@@ -221,9 +228,9 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="file-document-outline" size={size} color={color} />
                     ),
-                    drawerItemStyle: isReceptionist ? { display: 'none' } : hideIfBranchAdmin,
+                    drawerItemStyle: isReceptionist || isTechnician || isCustomer ? { display: 'none' } : hideIfBranchAdmin,
                 }}
-                redirect={isBranchAdmin || isReceptionist}
+                redirect={isBranchAdmin || isReceptionist || isTechnician || isCustomer}
             />
             <Drawer.Screen
                 name="bookings"
@@ -238,6 +245,44 @@ export default function DrawerLayout() {
                 redirect={!isReceptionist}
             />
             <Drawer.Screen
+                name="technician_assignment"
+                options={{
+                    drawerLabel: 'Assign Techs',
+                    title: 'Technician Assignment',
+                    drawerIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="account-wrench" size={size} color={color} />
+                    ),
+                    drawerItemStyle: isTechnician || isCustomer ? { display: 'none' } : undefined,
+                }}
+                redirect={isTechnician || isCustomer}
+            />
+
+            <Drawer.Screen
+                name="assigned_bookings"
+                options={{
+                    drawerLabel: 'My Assignments',
+                    title: 'Assigned Bookings',
+                    drawerIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="clipboard-list-outline" size={size} color={color} />
+                    ),
+                    drawerItemStyle: userRole !== 'TECHNICIAN' ? { display: 'none' } : undefined,
+                }}
+                redirect={userRole !== 'TECHNICIAN'}
+            />
+            <Drawer.Screen
+                name="completed_bookings"
+                options={{
+                    drawerLabel: 'Completed Bookings',
+                    title: 'Completed Bookings',
+                    drawerIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="clipboard-check-outline" size={size} color={color} />
+                    ),
+                    drawerItemStyle: userRole !== 'TECHNICIAN' ? { display: 'none' } : undefined,
+                }}
+                redirect={userRole !== 'TECHNICIAN'}
+            />
+
+            <Drawer.Screen
                 name="customers"
                 options={{
                     drawerLabel: 'Customers',
@@ -249,6 +294,45 @@ export default function DrawerLayout() {
                 }}
                 redirect={!isReceptionist}
             />
+
+            <Drawer.Screen
+                name="my_bookings"
+                options={{
+                    drawerLabel: 'My Bookings',
+                    title: 'My Bookings',
+                    drawerIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="clipboard-text-clock-outline" size={size} color={color} />
+                    ),
+                    drawerItemStyle: userRole === 'CUSTOMER' ? undefined : { display: 'none' },
+                }}
+                redirect={userRole !== 'CUSTOMER'}
+            />
+            <Drawer.Screen
+                name="my_payments"
+                options={{
+                    drawerLabel: 'My Payments',
+                    title: 'My Payments',
+                    drawerIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="cash-multiple" size={size} color={color} />
+                    ),
+                    drawerItemStyle: userRole === 'CUSTOMER' ? undefined : { display: 'none' },
+                }}
+                redirect={userRole !== 'CUSTOMER'}
+            />
+            <Drawer.Screen
+                name="payments"
+                options={{
+                    drawerLabel: 'Payments',
+                    title: 'Payments',
+                    drawerIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="cash-multiple" size={size} color={color} />
+                    ),
+                    drawerItemStyle: userRole === 'CUSTOMER' ? { display: 'none' } : undefined,
+                }}
+                redirect={userRole === 'CUSTOMER'}
+            />
+
+
             <Drawer.Screen
                 name="reports"
                 options={{
@@ -259,7 +343,7 @@ export default function DrawerLayout() {
                         <MaterialCommunityIcons name="chart-box-outline" size={size} color={color} />
                     ),
                 }}
-                redirect={isReceptionist}
+                redirect={isReceptionist || isTechnician || isCustomer}
             />
             <Drawer.Screen
                 name="branch_monthly_breakdown"
@@ -268,7 +352,7 @@ export default function DrawerLayout() {
                     title: 'Branch Monthly Breakdown',
                     drawerItemStyle: { display: 'none' }, // Always hide from main list
                 }}
-                redirect={isReceptionist}
+                redirect={isReceptionist || isTechnician || isCustomer}
             />
             <Drawer.Screen
                 name="test_monthly_breakdown"
@@ -277,7 +361,7 @@ export default function DrawerLayout() {
                     title: 'Test Monthly Breakdown',
                     drawerItemStyle: { display: 'none' }, // Always hide from main list
                 }}
-                redirect={isReceptionist}
+                redirect={isReceptionist || isTechnician || isCustomer}
             />
             <Drawer.Screen
                 name="settings"
@@ -294,7 +378,7 @@ export default function DrawerLayout() {
                     title: 'Branch Users',
                     drawerItemStyle: { display: 'none' }, // Always hide from main list
                 }}
-                redirect={isReceptionist}
+                redirect={isReceptionist || isTechnician || isCustomer}
             />
         </Drawer>
     );
